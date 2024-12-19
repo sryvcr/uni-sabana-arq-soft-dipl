@@ -80,7 +80,7 @@ from_iterable(matches).pipe(
             f"Total Points: {team['total_points']}\n"
             f"Goals Scored: {team['total_goals_scored']}\n"
             f"Goals Against: {team['total_goals_against']}\n"
-            f"Goal Difference: {team['total_goals_scored'] - team['total_goals_against']}"
+            f"Goal Difference: {team['total_goals_scored'] - team['total_goals_against']:+g}"
         )
         for team in sorted_teams
     ]

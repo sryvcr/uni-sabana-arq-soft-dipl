@@ -27,7 +27,7 @@ Al finalizar, el programa devolverá los siguientes resultados:
 Total Points: 6
 Goals Scored: 5
 Goals Against: 1
-Goal Difference: 4
+Goal Difference: +4
 ---------- Barcelona ----------
 Total Points: 1
 Goals Scored: 1
