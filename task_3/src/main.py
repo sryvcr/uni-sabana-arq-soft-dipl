@@ -1,5 +1,5 @@
 from rx import from_iterable
-from rx.operators import flat_map, map, reduce, group_by
+from rx.operators import flat_map, group_by, map, reduce, to_list
 
 
 class SoccerMatch:
@@ -44,11 +44,44 @@ from_iterable(matches).pipe(
     # Agrupar partidos por equipo
     group_by(lambda match: match.get_team()),
     map(lambda group: group.pipe(
-        # Sumar los puntos del equipo
-        reduce(lambda acc, match: acc + SoccerMatch.calculate_match_points(match), 0),
-        # Asociar el equipo con sus puntos
-        map(lambda total_points: (group.key, total_points))
+        # Sumar los puntos del equipo, goles a favor y en contra
+        reduce(
+            lambda acc, match: {
+                "team": group.key,
+                "total_points": acc["total_points"] + match.calculate_match_points(),
+                "total_goals_scored": acc["total_goals_scored"] + match.get_goals_scored(),
+                "total_goals_against": acc["total_goals_against"] + match.get_goals_againts(),
+            },
+            {
+                "team": group.key,
+                "total_points": 0,
+                "total_goals_scored": 0,
+                "total_goals_against": 0
+            }
+        ),
     )),
     # Aplanar el flujo de observables
-    flat_map(lambda x: x)
-).subscribe(lambda result: print(f"Team: {result[0]}, Total Points: {result[1]}"))
+    flat_map(lambda x: x),
+    # Convierte el flujo a una lista para poder ordenarla
+    to_list(),
+    # Ordenar por puntos totales y diferencia de goles
+    map(lambda teams: sorted(
+        teams,
+        key=lambda team: (
+            team["total_points"],
+            team["total_goals_scored"] - team["total_goals_against"],
+        ),
+        reverse=True,
+    ))
+).subscribe(
+    lambda sorted_teams: [
+        print(
+            f"---------- {team['team']} ----------\n"
+            f"Total Points: {team['total_points']}\n"
+            f"Goals Scored: {team['total_goals_scored']}\n"
+            f"Goals Against: {team['total_goals_against']}\n"
+            f"Goal Difference: {team['total_goals_scored'] - team['total_goals_against']}"
+        )
+        for team in sorted_teams
+    ]
+)
